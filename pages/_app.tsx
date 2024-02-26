@@ -1,9 +1,9 @@
 // _app.tsx
 import '@styles/globals.css';
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { AppProps } from 'next/app';
-import { QueryClientProvider, QueryClient } from 'react-query';
+import { QueryClientProvider, QueryClient, Hydrate } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools'
 
 const reactQueryClient = new QueryClient({
@@ -15,11 +15,24 @@ const reactQueryClient = new QueryClient({
 });
 
 const MyApp: FC<AppProps> = ({ Component, pageProps }: AppProps) => {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 20 * 1000
+          }
+        }
+      })
+  );
+
   // eslint-disable-next-line react/jsx-props-no-spreading
   return (
     <QueryClientProvider client={reactQueryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <Component {...pageProps} />
+      <Hydrate state={pageProps.dehydratedState}>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <Component {...pageProps} />
+      </Hydrate>
     </QueryClientProvider>
   );
 };
